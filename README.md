@@ -2,16 +2,14 @@
 安装环境
 
     Debian 8.2 
-安装命令
 
-    apt-get wget -y    #//精简系统需要
 
-    wget -N --no-check-certificate https://github.com/g0g001/SSR/master/one-ssr.sh && bash one-ssr.sh
+shell安装
+one-ssr.sh
 
  
-卸载命令
-
-    wget -N --no-check-certificate https://github.com/g0g001/SSR/master/uninstall.sh && bash uninstall.sh
+shell卸载
+uninstall.sh
 
 
 使用方法：
