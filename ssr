@@ -1,0 +1,497 @@
+#!/bin/bash
+export PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+#Copyright (c) 2016 YLWS-4617
+#This shell program is used to help users us ssr-bash in the easiest way.
+#Please obey the original license in this project file! thank you.
+######Check Root######
+[ $(id -u) != "0" ] && { echo "${CFAILURE}Error: You must be root to run this script${CEND}"; exit 1; }
+######Check Root######
+
+function preparevars(){
+
+	if [[ !(-f /usr/local/SSR-Bash/vars/method) ]]; then
+		mkdir -p /usr/local/SSR-Bash/vars/
+		echo "chacha20" > /usr/local/SSR-Bash/vars/method
+	fi
+
+	if [[ !(-f /usr/local/SSR-Bash/vars/protocol) ]]; then
+		echo "auth_sha1_v2_compatible" > /usr/local/SSR-Bash/vars/protocol
+	fi
+
+	if [[ !(-f /usr/local/SSR-Bash/vars/obfs) ]]; then
+		echo "http_simple_compatible" > /usr/local/SSR-Bash/vars/obfs
+	fi
+	
+	method=$(cat /usr/local/SSR-Bash/vars/method)
+	protocol=$(cat /usr/local/SSR-Bash/vars/protocol)
+	obfs=$(cat /usr/local/SSR-Bash/vars/obfs)
+}
+
+function echomethods(){
+	echo '1.chacha20'
+	echo '2.aes-128-cfb'
+	echo '3.aes-256-cfb'
+	echo '4.salsa20'
+	echo '5.rc4-md5'
+}
+
+function echoprotocols(){
+	echo '1.origin'
+	echo '2.auth_simple'
+	echo '3.auth_sha1'
+	echo '4.auth_sha1_v2'
+	echo '5.auth_sha1_v4'
+	echo '6.auth_aes128_md5'
+	echo '7.auth_aes128_sha1'
+	echo '8.verify_sha1'
+	echo '9.verify_deflate'
+}
+
+function echoobfs(){
+	echo '1.plain'
+	echo '2.http_simple'
+	echo '3.http_post'
+	echo '4.tls1.2_ticket_auth'
+
+}
+
+function echocopyright(){
+	echo '欢迎来到SSR-Bash管理程序！Author: 雨落无声'
+	echo ''
+	echo -e "当前加密方式：\033[33m${method}\033[0m"
+	echo -e "当前协议：\033[33m${protocol}\033[0m"
+	echo -e "当前混淆：\033[33m${obfs}\033[0m"
+	echo ''
+	echo "请输入序号来选择功能："
+}
+
+
+function showchoice(){
+	echo '1.服务管理'
+	echo '2.用户管理'
+	echo '3.流量控制'
+	echo '4.备份配置'
+	echo ''
+}
+
+function serverchoice(){
+	echo '1.启动服务'
+	echo '2.停止服务'
+	echo '3.重启服务'
+	echo '4.服务状态'
+	echo '5.修改加密、协议、混淆方式'
+	echo '6.修改 DNS'
+	echo ''
+}
+
+
+function userchoice(){
+	echo '1.添加用户'
+	echo '2.删除用户'
+	echo '3.修改用户密码'
+	echo '4.显示用户密码信息'
+	echo '5.显示所有用户密码信息'
+	echo '6.批量添加用户（测试）'
+}
+
+function bandchoice(){
+	echo '1.显示用户流量信息'
+	echo '2.显示所有用户流量信息'
+	echo '3.修改用户流量限制'
+	echo '4.修改所有用户流量限制'
+	echo '5.清零用户流量使用量'
+	echo '6.清零所有用户流量使用量'
+	echo '7.显示已添加的iptables规则'
+	echo ''
+}
+function upgradechoice(){
+	echo '1.备份配置文件'
+	echo '2.还原配置文件'
+	echo ''
+}
+
+
+#Main
+clear
+preparevars
+echocopyright
+showchoice
+
+while :; do echo
+
+	read -p "请选择： " choice
+
+	if [[ ! $choice =~ ^[1-4]$ ]]; then
+		echo "${CWARNING}输入错误! 请输入正确的数字!${CEND}"
+	else
+		break	
+	fi
+done
+
+if [[ $choice == 1 ]];then
+
+	serverchoice
+
+	while :; do echo
+		read -p "请选择： " schoice
+		if [[ ! $schoice =~ ^[1-6]$ ]]; then
+			echo "${CWARNING}输入错误! 请输入正确的数字!${CEND}"
+		else
+			break	
+		fi
+	done
+
+	if [[ $schoice == 1 ]];then
+		bash /usr/local/SSR-Bash/ssadmin.sh start
+	fi
+
+	if [[ $schoice == 2 ]];then
+		bash /usr/local/SSR-Bash/ssadmin.sh stop
+	fi
+
+	if [[ $schoice == 3 ]];then
+		bash /usr/local/SSR-Bash/ssadmin.sh restart
+	fi
+
+	if [[ $schoice == 4 ]];then
+		bash /usr/local/SSR-Bash/ssadmin.sh status
+	fi
+	if [[ $schoice == 5 ]];then
+		preparevars
+		echomethods
+
+		while :; do echo
+			read -p "请选择新的加密方式： " methodchoice
+			if [[ ! $methodchoice =~ ^[1-5]$ ]]; then
+				echo "${CWARNING}输入错误! 请输入正确的数字!${CEND}"
+			else
+				break
+			fi
+		done
+
+		if [[ $methodchoice == 1 ]];then
+			rm -rf /usr/local/SSR-Bash/vars/method
+			echo "chacha20" > /usr/local/SSR-Bash/vars/method
+			sed -i "s/${method}/chacha20/g" /usr/local/SSR-Bash/ssmlt.template
+		fi
+
+		if [[ $methodchoice == 2 ]];then
+			rm -rf /usr/local/SSR-Bash/vars/method
+			echo "aes-128-cfb" > /usr/local/SSR-Bash/vars/method
+			sed -i "s/${method}/aes-128-cfb/g" /usr/local/SSR-Bash/ssmlt.template
+		fi
+
+		if [[ $methodchoice == 3 ]];then
+			rm -rf /usr/local/SSR-Bash/vars/method
+			echo "aes-256-cfb" > /usr/local/SSR-Bash/vars/method
+			sed -i "s/${method}/aes-256-cfb/g" /usr/local/SSR-Bash/ssmlt.template
+		fi
+
+		if [[ $methodchoice == 4 ]];then
+			rm -rf /usr/local/SSR-Bash/vars/method
+			echo "salsa20" > /usr/local/SSR-Bash/vars/method
+			sed -i "s/${method}/salsa20/g" /usr/local/SSR-Bash/ssmlt.template
+		fi
+
+		if [[ $methodchoice == 5 ]];then
+			rm -rf /usr/local/SSR-Bash/vars/method
+			echo "rc4-md5" > /usr/local/SSR-Bash/vars/method
+			sed -i "s/${method}/rc4-md5/g" /usr/local/SSR-Bash/ssmlt.template
+		fi
+
+		echoprotocols
+
+		while :; do echo
+			read -p "请选择新的协议： " protocolchoice
+			if [[ ! $protocolchoice =~ ^[1-9]$ ]]; then
+				echo "${CWARNING}输入错误! 请输入正确的数字!${CEND}"
+			else
+				break
+			fi
+		done
+
+		if [[ $protocolchoice != 1 ]];then
+
+			while :; do echo
+    			read -p "是否兼容原版协议？ [y/n]: " ifprotocolcompa
+    			if [[ ! $ifprotocolcompa =~ ^[y,n]$ ]];then
+        			echo "${CWARNING}输入错误! 请输入 'y' 或者 'n'${CEND}"
+        		else
+        			break
+        		fi
+        	done
+
+        	if [[ $ifprotocolcompa == y ]];then
+        		protocolcompa='_compatible'
+        	else
+        		protocolcompa=''
+        	fi
+		fi
+
+
+
+		if [[ $protocolchoice == 1 ]];then
+			rm -rf /usr/local/SSR-Bash/vars/protocol
+			echo "origin" > /usr/local/SSR-Bash/vars/protocol
+			sed -i "s/${protocol}/origin/g" /usr/local/SSR-Bash/ssmlt.template
+		fi
+		
+		if [[ $protocolchoice == 2 ]];then
+			rm -rf /usr/local/SSR-Bash/vars/protocol
+			echo "auth_simple${protocolcompa}" > /usr/local/SSR-Bash/vars/protocol
+			sed -i "s/${protocol}/auth_simple${protocolcompa}/g" /usr/local/SSR-Bash/ssmlt.template
+		fi
+		
+		if [[ $protocolchoice == 3 ]];then
+			rm -rf /usr/local/SSR-Bash/vars/protocol
+			echo "auth_sha1${protocolcompa}" > /usr/local/SSR-Bash/vars/protocol
+			sed -i "s/${protocol}/auth_sha1${protocolcompa}/g" /usr/local/SSR-Bash/ssmlt.template
+		fi
+
+		if [[ $protocolchoice == 4 ]];then
+			rm -rf /usr/local/SSR-Bash/vars/protocol
+			echo "auth_sha1_v2${protocolcompa}" > /usr/local/SSR-Bash/vars/protocol
+			sed -i "s/${protocol}/auth_sha1_v2${protocolcompa}/g" /usr/local/SSR-Bash/ssmlt.template
+		fi
+
+		if [[ $protocolchoice == 5 ]];then
+			rm -rf /usr/local/SSR-Bash/vars/protocol
+			echo "auth_sha1_v4${protocolcompa}" > /usr/local/SSR-Bash/vars/protocol
+			sed -i "s/${protocol}/auth_sha1_v4${protocolcompa}/g" /usr/local/SSR-Bash/ssmlt.template
+		fi
+
+		if [[ $protocolchoice == 6 ]];then
+			rm -rf /usr/local/SSR-Bash/vars/protocol
+			echo "auth_aes128_md5${protocolcompa}" > /usr/local/SSR-Bash/vars/protocol
+			sed -i "s/${protocol}/auth_aes128_md5${protocolcompa}/g" /usr/local/SSR-Bash/ssmlt.template
+		fi
+
+		if [[ $protocolchoice == 7 ]];then
+			rm -rf /usr/local/SSR-Bash/vars/protocol
+			echo "auth_aes128_sha1${protocolcompa}" > /usr/local/SSR-Bash/vars/protocol
+			sed -i "s/${protocol}/auth_aes128_sha1${protocolcompa}/g" /usr/local/SSR-Bash/ssmlt.template
+		fi
+
+		if [[ $protocolchoice == 8 ]];then
+			rm -rf /usr/local/SSR-Bash/vars/protocol
+			echo "verify_sha1${protocolcompa}" > /usr/local/SSR-Bash/vars/protocol
+			sed -i "s/${protocol}/verify_sha1${protocolcompa}/g" /usr/local/SSR-Bash/ssmlt.template
+		fi
+
+		if [[ $protocolchoice == 9 ]];then
+			rm -rf /usr/local/SSR-Bash/vars/protocol
+			echo "verify_deflate${protocolcompa}" > /usr/local/SSR-Bash/vars/protocol
+			sed -i "s/${protocol}/verify_deflate${protocolcompa}/g" /usr/local/SSR-Bash/ssmlt.template
+		fi
+
+		echoobfs
+
+		while :; do echo
+			read -p "请选择新的混淆： " obfschoice
+			if [[ ! $obfschoice =~ ^[1-4]$ ]]; then
+				echo "${CWARNING}输入错误! 请输入正确的数字!${CEND}"
+			else
+				break
+			fi
+		done
+
+
+		if [[ $obfschoice != 1 ]];then
+
+			while :; do echo
+    			read -p "是否兼容原版协议？ [y/n]: " ifobfscompa
+    			if [[ ! $ifobfscompa =~ ^[y,n]$ ]];then
+        			echo "${CWARNING}输入错误! 请输入 'y' 或者 'n'${CEND}"
+        		else
+        			break
+        		fi
+        	done
+
+        	if [[ $ifobfscompa == y ]];then
+        		obfscompa='_compatible'
+        	else
+        		obfscompa=''
+        	fi
+		fi
+
+
+
+		if [[ $obfschoice == 1 ]];then
+			rm -rf /usr/local/SSR-Bash/vars/obfs
+			echo "plain" > /usr/local/SSR-Bash/vars/obfs
+			sed -i "s/${obfs}/plain/g" /usr/local/SSR-Bash/ssmlt.template
+		fi
+
+		if [[ $obfschoice == 2 ]];then
+			rm -rf /usr/local/SSR-Bash/vars/obfs
+			echo "http_simple${obfscompa}" > /usr/local/SSR-Bash/vars/obfs
+			sed -i "s/${obfs}/http_simple${obfscompa}/g" /usr/local/SSR-Bash/ssmlt.template
+		fi
+
+		if [[ $obfschoice == 3 ]];then
+			rm -rf /usr/local/SSR-Bash/vars/obfs
+			echo "http_post${obfscompa}" > /usr/local/SSR-Bash/vars/obfs
+			sed -i "s/${obfs}/http_post${obfscompa}/g" /usr/local/SSR-Bash/ssmlt.template
+		fi
+
+		if [[ $obfschoice == 4 ]];then
+			rm -rf /usr/local/SSR-Bash/vars/obfs
+			echo "tls1.2_ticket_auth${obfscompa}" > /usr/local/SSR-Bash/vars/obfs
+			sed -i "s/${obfs}/tls1.2_ticket_auth${obfscompa}/g" /usr/local/SSR-Bash/ssmlt.template
+		fi
+
+		bash /usr/local/SSR-Bash/ssadmin.sh restart
+		echo ''
+		echo '修改成功！服务器已重启！'
+		preparevars
+		echo "当前加密方式：${method}"
+		echo "当前协议：${protocol}"
+		echo "当前混淆：${obfs}"
+
+	fi
+	if [[ $schoice == 6 ]];then
+	read -p "输入主要 DNS 服务器: " ifdns1
+	read -p "输入次要 DNS 服务器: " ifdns2
+	echo "nameserver $ifdns1" > /etc/resolv.conf
+	echo "nameserver $ifdns2" >> /etc/resolv.conf
+	echo "DNS 服务器已设置为  $ifdns1 $ifdns2"
+	fi
+fi
+
+
+
+if [[ $choice == 2 ]];then
+	userchoice
+	while :; do echo
+		read -p "请选择： " uchoice
+		if [[ ! $uchoice =~ ^[1-6]$ ]]; then
+			echo "${CWARNING}输入错误! 请输入正确的数字!${CEND}"
+		else
+			break
+		fi
+	done
+
+	if [[ $uchoice == 1 ]];then
+		read -p "请输入新用户端口： " newport
+		read -p "请输入新用户端口的密码： " newpassword
+		read -p "请输入新用户流量限制（例如 10G, 500M）： " newlimit
+		bash /usr/local/SSR-Bash/ssadmin.sh add $newport $newpassword $newlimit
+		echo ''
+		echo "端口为 $newport 密码为 $newpassword 流量限制为 $newlimit 的用户已添加成功！"
+	fi
+
+	if [[ $uchoice == 2 ]];then
+		read -p "请输入要删除的用户端口： " delport
+		bash /usr/local/SSR-Bash/ssadmin.sh del $delport
+		echo "端口为 $delport 的用户删除成功！"
+	fi
+
+	if [[ $uchoice == 3 ]];then
+		read -p "请输入要修改密码的用户的端口： " cport
+		read -p "请输入新密码： " cpassword
+		bash /usr/local/SSR-Bash/ssadmin.sh cpw $cport $cpassword
+		echo "端口为 $cport 的用户密码已成功更改为 $cpassword"
+	fi
+
+	if [[ $uchoice == 4 ]];then
+		read -p "请输入要查看密码的用户端口： " showport
+		bash /usr/local/SSR-Bash/ssadmin.sh showpw $showport
+	fi
+
+	if [[ $uchoice == 5 ]];then
+		bash /usr/local/SSR-Bash/ssadmin.sh showpw
+	fi
+	
+	if [[ $uchoice == 6 ]];then
+	read -p "请输入起始端口： " startport
+	read -p "请输入新用户端口的密码： " newpassword
+	read -p "请输入新用户流量限制（例如 10G, 500M）： " newlimit
+	read -p "请输入添加用户数量： " usernum
+	bash /usr/local/SSR-Bash/ssadmin.sh addmore $startport $newpassword $newlimit $usernum
+	echo ''
+	echo "起始端口为 $startport ，数量为$usernum，密码为 $newpassword 流量限制为 $newlimit 的用户已添加成功！"
+	fi
+fi
+
+
+if [[ $choice == 3 ]];then
+
+	bandchoice
+
+	while :; do echo
+		read -p "请选择： " bchoice
+		if [[ ! $bchoice =~ ^[1-7]$ ]]; then
+			echo "${CWARNING}输入错误! 请输入正确的数字!${CEND}"
+		else
+			break
+		fi
+	done
+
+	if [[ $bchoice == 1 ]];then
+		read -p "请输入要查看流量的用户端口： " bport
+		bash /usr/local/SSR-Bash/ssadmin.sh show $bport
+	fi
+
+	if [[ $bchoice == 2 ]];then
+		bash /usr/local/SSR-Bash/ssadmin.sh show
+	fi
+	
+	if [[ $bchoice == 3 ]];then
+		read -p "请输入要修改流量限制的用户端口： " climitport
+		read -p "请输入新的流量限制： " climit
+		bash /usr/local/SSR-Bash/ssadmin.sh clim $climitport $climit
+		echo "端口为 $climitport 的用户的流量限制已改为 $climit"
+	fi
+	
+	if [[ $bchoice == 4 ]];then
+		read -p "请输入对所有用户的新的流量限制： " climitforallusers
+		bash /usr/local/SSR-Bash/ssadmin.sh change_all_limit $climitforallusers
+		echo "所有用户的流量限制已改为 $climitforallusers"
+	fi
+	
+	if [[ $bchoice == 5 ]];then
+		read -p "请输入要清零已用流量的用户端口： " zeroport
+		bash /usr/local/SSR-Bash/ssadmin.sh rused $zeroport
+		echo "端口号为 $zeroport 的用户已用流量已清零"
+	fi
+	
+	if [[ $bchoice == 6 ]];then
+		bash /usr/local/SSR-Bash/ssadmin.sh reset_all_used
+		echo '所有用户已用流量已清零！'
+	fi
+	
+	if [[ $bchoice == 7 ]];then
+		bash /usr/local/SSR-Bash/ssadmin.sh lrules
+	fi	
+fi
+
+if [[ $choice == 4 ]];then
+	upgradechoice
+	while :; do echo
+		read -p "请选择： " upgradeselect
+		if [[ ! $upgradeselect =~ ^[1-2]$ ]]; then
+			echo "${CWARNING}输入错误! 请输入正确的数字!${CEND}"
+		else
+			break
+		fi
+	done 
+		
+	if [[ $upgradeselect == 1 ]];then
+		bash /usr/local/SSR-Bash/ssadmin.sh stop
+		rm -rf /root/ssusers
+		rm -rf /root/sstraffic
+		cp /usr/local/SSR-Bash/ssusers /root/
+		cp /usr/local/SSR-Bash/sstraffic /root/
+		bash /usr/local/SSR-Bash/ssadmin.sh start
+	fi
+	
+	if [[ $upgradeselect == 2 ]];then
+		bash /usr/local/SSR-Bash/ssadmin.sh stop
+		rm -rf /usr/local/SSR-Bash/ssusers
+		rm -rf /usr/local/SSR-Bash/sstraffic
+		cp /root/ssusers /usr/local/SSR-Bash/ 
+		cp /root/sstraffic /usr/local/SSR-Bash/
+		bash /usr/local/SSR-Bash/ssadmin.sh start
+	fi
+	
+fi
