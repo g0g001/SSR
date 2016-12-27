@@ -3,7 +3,9 @@
 
     Debian 8.2 
 安装命令
+
     apt-get wget -y    #//精简系统需要
+
     wget -N --no-check-certificate https://github.com/g0g001/SSR/master/one-ssr.sh && bash one-ssr.sh
 
  
