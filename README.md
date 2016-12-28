@@ -9,6 +9,7 @@ shell安装
 one-ssr.sh
 
 在线一键安装
+
  apt-get install wget                  #已安装wget命令，自行跳过。
  
  wget -O one-ssr.sh http://pan.plyz.net/s/?u=387554329&p=one-ssr.sh && bash one-ssr.sh
