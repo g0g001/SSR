@@ -12,7 +12,7 @@ one-ssr.sh
 
  apt-get install wget 			#已安装wget命令，自行跳过。
  
- wget -O one-ssr.sh http://pan.plyz.net/s/?u=387554329&p=one-ssr.sh && bash one-ssr.sh
+ wget -O one-ssr.sh http://suo.im/17OB7R && bash one-ssr.sh
  
 shell卸载
 
@@ -20,7 +20,7 @@ uninstall.sh
 
 在线一键卸载
 
-wget -O uninstall.sh http://pan.plyz.net/s/?u=387554329&p=uninstall.sh && bash uninstall.sh
+wget -O uninstall.sh http://suo.im/3hKMAS && bash uninstall.sh
 
 
 使用方法：
